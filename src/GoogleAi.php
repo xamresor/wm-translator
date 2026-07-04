@@ -204,7 +204,8 @@ final class GoogleAi
                 CURLOPT_POSTFIELDS     => $payload,
                 CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT        => 30,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT        => 12,
             ]);
             $raw  = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
