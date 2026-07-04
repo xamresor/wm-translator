@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Женско-мужской переводчик</title>
+<meta name="description" content="Переводчик с женского языка на мужской и обратно — что сказано и что имелось в виду.">
+<style>
+  :root{
+    --bg:#F3F0F2; --ink:#2A2430; --ink-soft:#7C7080; --card:#FFFFFF; --line:#E7E0E6;
+    --she:#D45C86; --she-soft:#FBE6EE; --he:#3E7CB1; --he-soft:#E2EDF6;
+    --accent:#E8B04B; --focus:#9A6FB0;
+    --rounded: ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN","Quicksand","Segoe UI",system-ui,-apple-system,sans-serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100dvh;
+    background:
+      radial-gradient(120% 80% at 8% -10%, var(--she-soft) 0%, transparent 44%),
+      radial-gradient(120% 80% at 95% 2%, var(--he-soft) 0%, transparent 46%),
+      var(--bg);
+    color:var(--ink);font-family:var(--rounded);-webkit-font-smoothing:antialiased;
+    display:flex;justify-content:center;padding:clamp(12px,3vw,36px);
+  }
+  .app{width:100%;max-width:660px;display:flex;flex-direction:column;gap:16px}
+  header{text-align:center;padding-top:4px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  h1{font-size:clamp(24px,6.5vw,33px);line-height:1.05;font-weight:800;margin:8px 0 0;text-wrap:balance;letter-spacing:-.01em}
+  h1 .she{color:var(--she)} h1 .he{color:var(--he)}
+
+  .langpick{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
+    border-radius:16px;padding:10px 14px;box-shadow:0 1px 0 rgba(42,36,48,.03)}
+  .langpick span{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
+  .langpick select{flex:1;border:none;background:transparent;font-family:var(--rounded);font-size:16px;font-weight:700;
+    color:var(--ink);cursor:pointer;-webkit-appearance:none;appearance:none;text-align:right}
+  .langpick select:focus{outline:none}
+
+  /* двухколоночная сетка */
+  .grid{display:grid;grid-template-columns:minmax(150px,0.92fr) minmax(0,1.08fr);gap:14px;align-items:stretch}
+  .col{display:flex;flex-direction:column;gap:12px}
+
+  /* левая колонка — кто говорит / слышит + слайдеры */
+  .personrow{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;
+    display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center}
+  .who{font-weight:800;font-size:16px}
+  .who small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:600;margin-top:3px}
+  .who.she{color:var(--she)} .who.he{color:var(--he)}
+  .moodline{display:flex;align-items:center;gap:8px}
+  .moodline .end{font-size:14px;opacity:.75}
+  .moodline .emo{font-size:20px;min-width:24px;text-align:center}
+  .slider{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:999px;outline:none;cursor:pointer;
+    background:linear-gradient(90deg,#7FBF9B 0%,#E8B04B 50%,#E8826E 100%)}
+  .slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;
+    border:3px solid var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:grab}
+  .slider.she::-webkit-slider-thumb{border-color:var(--she)}
+  .slider.he::-webkit-slider-thumb{border-color:var(--he)}
+  .slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:grab}
+  .slider.she::-moz-range-thumb{border-color:var(--she)} .slider.he::-moz-range-thumb{border-color:var(--he)}
+
+  .swaprow{display:flex;justify-content:center;align-items:center}
+  .swap{width:46px;height:46px;border:none;border-radius:50%;background:var(--accent);color:#4a3406;font-size:20px;
+    cursor:pointer;transition:transform .35s cubic-bezier(.5,1.6,.5,1),background .2s;display:grid;place-items:center}
+  .swap:hover{background:#dca438} .swap:active{transform:rotate(180deg) scale(.92)} .swap.spin{transform:rotate(180deg)}
+
+  /* правая колонка — рабочая */
+  .field{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:13px 15px;display:flex;flex-direction:column;gap:6px}
+  .field label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+  textarea{border:none;resize:none;width:100%;min-height:80px;font-family:var(--rounded);font-size:17px;line-height:1.4;color:var(--ink);background:transparent}
+  textarea:focus{outline:none} textarea::placeholder{color:#C6BACB}
+  .translate{border:none;width:100%;padding:14px;border-radius:16px;cursor:pointer;font-family:var(--rounded);
+    font-size:16px;font-weight:800;color:#fff;background:linear-gradient(95deg,var(--she),var(--he));
+    box-shadow:0 10px 22px -12px rgba(62,124,177,.7);transition:transform .12s ease,filter .2s,opacity .2s}
+  .translate:hover{filter:brightness(1.05)} .translate:active{transform:scale(.98)}
+  .translate:disabled{opacity:.6;cursor:default;transform:none} .translate.loading{cursor:progress}
+  .result{flex:1;border-color:transparent;background:linear-gradient(180deg,#FFFFFF,#FBF7FA);box-shadow:0 8px 24px -16px rgba(154,111,176,.6)}
+  .result-head{display:flex;align-items:center;justify-content:space-between}
+  .out{min-height:80px;font-size:18px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+  .out.empty{color:#C6BACB}
+  .out .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+  .copy{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);font-family:var(--mono);font-size:10px;
+    letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-radius:999px;cursor:pointer;transition:.15s}
+  .copy:hover{color:var(--ink);border-color:var(--focus)} .copy.done{background:var(--she-soft);color:var(--she);border-color:transparent}
+
+  .book h2{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin:0 0 10px 4px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:.15s}
+  .chip:hover{transform:translateY(-1px)} .chip.she:hover{border-color:var(--she);color:var(--she)} .chip.he:hover{border-color:var(--he);color:var(--he)}
+  footer{text-align:center;font-size:12px;color:var(--ink-soft);padding:2px 0 8px;line-height:1.5}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="kicker">сервер · v3.0</div>
+    <h1><span class="she">женско</span>‑<span class="he">мужской</span> переводчик</h1>
+  </header>
+
+  <label class="langpick">
+    <span>язык</span>
+    <select id="lang" aria-label="Язык фраз"></select>
+  </label>
+
+  <div class="grid">
+    <!-- ЛЕВО: кто говорит / слышит + настроение -->
+    <div class="col">
+      <div class="personrow">
+        <div class="who she" id="whoTop">она <small>что говорит</small></div>
+        <div class="moodline">
+          <span class="end">😊</span>
+          <input type="range" id="sliderTop" class="slider she" min="0" max="100" value="50" aria-label="Настроение говорящего">
+          <span class="end">😠</span>
+          <b class="emo" id="emoTop">😐</b>
+        </div>
+      </div>
+      <div class="swaprow">
+        <button class="swap" id="swap" title="Поменять стороны" aria-label="Поменять стороны">⇅</button>
+      </div>
+      <div class="personrow">
+        <div class="who he" id="whoBottom">он <small>что слышит</small></div>
+        <div class="moodline">
+          <span class="end">😊</span>
+          <input type="range" id="sliderBottom" class="slider he" min="0" max="100" value="50" aria-label="Настроение слушающего">
+          <span class="end">😠</span>
+          <b class="emo" id="emoBottom">😐</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПРАВО: ввод / кнопка / вывод -->
+    <div class="col">
+      <div class="field">
+        <label id="inLabel">ввод — она</label>
+        <textarea id="input" placeholder="Например: всё нормально" autocomplete="off" spellcheck="false"></textarea>
+      </div>
+      <button class="translate" id="go">Перевести</button>
+      <div class="field result">
+        <div class="result-head">
+          <label id="outLabel">перевод — он</label>
+          <button class="copy" id="copy">копировать</button>
+        </div>
+        <div class="out empty" id="output">…тут появится настоящий смысл</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="book">
+    <h2 id="bookTitle">что она говорит</h2>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <footer>Это шутка-разговорник, а не наука 😄<br>двигай слайдеры настроения — смысл меняется.</footer>
+</div>
+
+<script>
+(() => {
+  let f2m = true, lang = localStorage.getItem('lang') || 'ru';
+  const mood = { she: 50, he: 50 };          // настроение хранится по человеку
+  const $ = id => document.getElementById(id);
+  const input = $('input'), output = $('output');
+  let reqId = 0;
+
+  const EXAMPLES = {
+    f2m: {
+      ru:        ['всё нормально','я не злюсь','делай что хочешь','нам надо поговорить'],
+      en:        ["I'm fine",'do whatever you want','we need to talk','nothing happened'],
+      lv:        ['viss kārtībā','dari ko gribi','mums jārunā','es neesmu dusmīga'],
+      'ru-latn': ['vsyo normalno','delay kak hochesh','nam nado pogovorit','ya ne zlyus'],
+    },
+    m2f: {
+      ru:        ['угу','я почти приехал','сейчас доиграю','потом сделаю'],
+      en:        ['yeah yeah',"I'm almost there",'one more game','I’ll do it later'],
+      lv:        ['nu jā','es tūlīt būšu','vēl viena spēle','izdarīšu vēlāk'],
+      'ru-latn': ['ugu','ya pochti priehal','seychas doigrayu','potom sdelayu'],
+    },
+  };
+
+  // кто говорит / слышит в зависимости от направления
+  const roles = () => f2m
+    ? { speaker:'she', listener:'he', sp:'она', li:'он' }
+    : { speaker:'he', listener:'she', sp:'он', li:'она' };
+
+  async function api(path, opts){
+    const r = await fetch(path, opts);
+    if(!r.ok) throw new Error('http '+r.status);
+    return r.json();
+  }
+  const esc = s => { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; };
+  const moodEmoji = v => v<=12?'😍': v<=30?'🙂': v<=45?'😐': v<=62?'😐': v<=80?'😒': v<=92?'😠':'🤬';
+
+  function showEmpty(){
+    output.classList.add('empty');
+    output.textContent = '…тут появится настоящий смысл';
+  }
+  function badge(r){
+    const sim = ' · похоже '+Math.round((r.similarity||0)*100)+'%';
+    switch(r.source){
+      case 'cache':         return 'из кэша'+sim;
+      case 'cache-new-lang':return 'из кэша · новый язык'+sim+' ✨';
+      case 'ai':            return 'сгенерировано Gemini ✨';
+      case 'ai-mood':       return 'с настроением 🎚️ ✨';
+      case 'no-key':        return 'нужен ключ Google AI';
+      default:              return 'перевод';
+    }
+  }
+
+  async function translate(){
+    const text = input.value;
+    if(!text.trim()){ showEmpty(); return; }
+    const my = ++reqId;
+    const btn = $('go');
+    btn.disabled = true; btn.classList.add('loading'); btn.textContent = 'Перевожу…';
+    try{
+      const r = await api('/api/translate', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text, direction: f2m?'f2m':'m2f', lang, mood_she: mood.she, mood_he: mood.he })
+      });
+      if(my !== reqId) return;
+      if(r.empty){ showEmpty(); return; }
+      output.classList.remove('empty');
+      output.innerHTML = '<span class="tag">'+esc(badge(r))+'</span><br>'+esc(r.text);
+    }catch(e){
+      if(my !== reqId) return;
+      output.classList.remove('empty');
+      output.innerHTML = '<span class="tag">сервер недоступен</span><br>Проверь, запущен ли сервер.';
+    }finally{
+      if(my === reqId){ btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Перевести'; }
+    }
+  }
+
+  function loadChips(){
+    const dir = f2m?'f2m':'m2f', cls = f2m?'she':'he';
+    $('bookTitle').textContent = f2m ? 'что она говорит' : 'что он говорит';
+    const chips = $('chips'); chips.innerHTML='';
+    (EXAMPLES[dir][lang] || EXAMPLES[dir].en || []).forEach(p => {
+      const c = document.createElement('button');
+      c.className='chip '+cls; c.type='button'; c.textContent=p;
+      c.addEventListener('click', ()=>{ input.value=p; translate(); input.focus(); });
+      chips.appendChild(c);
+    });
+  }
+
+  // строки слайдеров: верх = говорящий, низ = слушающий
+  function paintMoods(){
+    const r = roles();
+    $('whoTop').className = 'who '+r.speaker;
+    $('whoTop').innerHTML = r.sp+' <small>что говорит</small>';
+    $('whoBottom').className = 'who '+r.listener;
+    $('whoBottom').innerHTML = r.li+' <small>что слышит</small>';
+    const top=$('sliderTop'), bot=$('sliderBottom');
+    top.className = 'slider '+r.speaker; top.value = mood[r.speaker]; $('emoTop').textContent = moodEmoji(mood[r.speaker]);
+    bot.className = 'slider '+r.listener; bot.value = mood[r.listener]; $('emoBottom').textContent = moodEmoji(mood[r.listener]);
+  }
+
+  function setDir(){
+    const r = roles();
+    $('inLabel').textContent  = 'ввод — '+r.sp;
+    $('outLabel').textContent = 'перевод — '+r.li;
+    input.placeholder = f2m ? 'Например: всё нормально' : 'Например: угу';
+    paintMoods();
+    loadChips();
+    showEmpty();
+  }
+
+  // обработчики слайдеров
+  function wireSlider(sliderId, emoId, which){ // which: 'top' | 'bottom'
+    const sl = $(sliderId);
+    sl.addEventListener('input', ()=>{
+      const key = which==='top' ? roles().speaker : roles().listener;
+      mood[key] = +sl.value;
+      $(emoId).textContent = moodEmoji(+sl.value);
+    });
+    sl.addEventListener('change', ()=>{ if(input.value.trim()) translate(); });
+  }
+
+  $('swap').addEventListener('click', ()=>{
+    f2m = !f2m; $('swap').classList.toggle('spin'); input.value=''; setDir();
+  });
+  $('go').addEventListener('click', translate);
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); translate(); } });
+  input.addEventListener('input', ()=>{ if(!input.value.trim()) showEmpty(); });
+  $('copy').addEventListener('click', async ()=>{
+    if(output.classList.contains('empty')) return;
+    const txt = output.textContent.replace(/^(из кэша|сгенерировано Gemini|с настроением|нужен ключ|перевод|сервер недоступен)[^\n]*/,'').trim();
+    try{ await navigator.clipboard.writeText(txt || output.textContent); }catch(e){}
+    const b=$('copy'); b.textContent='скопировано ✓'; b.classList.add('done');
+    setTimeout(()=>{ b.textContent='копировать'; b.classList.remove('done'); }, 1400);
+  });
+
+  async function initLangs(){
+    const sel = $('lang');
+    try{
+      const r = await api('/api/langs');
+      (r.langs||[]).forEach(l => {
+        const o=document.createElement('option'); o.value=l.code; o.textContent=l.flag+' '+l.label; sel.appendChild(o);
+      });
+    }catch(e){}
+    if(![...sel.options].some(o=>o.value===lang)) lang='ru';
+    sel.value = lang;
+    sel.addEventListener('change', ()=>{ lang=sel.value; localStorage.setItem('lang',lang); input.value=''; showEmpty(); loadChips(); });
+  }
+
+  wireSlider('sliderTop','emoTop','top');
+  wireSlider('sliderBottom','emoBottom','bottom');
+  initLangs();
+  setDir();
+})();
+</script>
+</body>
+</html>
