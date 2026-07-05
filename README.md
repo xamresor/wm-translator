@@ -118,8 +118,7 @@ GET  /api/stats   → {"concepts":..,"ai":..,"dict":..,"hits":..,"variants_lang"
 ```
 
 Сервер перечитывает файл на каждом запросе — перезапуск не нужен.
+
 ## License
 
-[PolyForm Noncommercial License 1.0.0](LICENSE.md) — free for any **noncommercial** use (personal, research, education, hobbies); **commercial use is not permitted**.
-
-Required Notice: Copyright 2026 Romans Sereda (https://romans.sereda.lv)
+[GPL-3.0-or-later](LICENSE) — free software: use, study, share and modify it. Copyright (C) 2026 Romans Sereda. Derivative works must also be licensed under the GPL (copyleft).
