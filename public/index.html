@@ -88,9 +88,13 @@
   .chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:.15s}
   .chip:hover{transform:translateY(-1px)} .chip.she:hover{border-color:var(--she);color:var(--she)} .chip.he:hover{border-color:var(--he);color:var(--he)}
   footer{text-align:center;font-size:12px;color:var(--ink-soft);padding:2px 0 8px;line-height:1.5}
+  .beta{display:flex;align-items:center;gap:8px;margin:0 auto 10px;max-width:420px;padding:6px 12px;border-radius:999px;
+    background:#FFF3D6;border:1px solid var(--accent);color:#7A5512;font-size:11.5px;line-height:1.35}
+  .beta b{flex:none;background:var(--accent);color:#fff;border-radius:999px;padding:1px 7px;font-size:10px;letter-spacing:.04em}
   :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<script defer src="https://stats.sereda.lv/script.js" data-website-id="3896e40c-5739-43fe-a0be-96954d6e12f1"></script>
 </head>
 <body>
 <div class="app">
@@ -117,7 +121,7 @@
         </div>
       </div>
       <div class="swaprow">
-        <button class="swap" id="swap" title="Поменять стороны" aria-label="Поменять стороны">⇅</button>
+        <button class="swap" id="swap" title="Поменять местами" aria-label="Поменять местами">⇅</button>
       </div>
       <div class="personrow">
         <div class="who he" id="whoBottom">он <small>что слышит</small></div>
@@ -133,13 +137,13 @@
     <!-- ПРАВО: ввод / кнопка / вывод -->
     <div class="col">
       <div class="field">
-        <label id="inLabel">ввод — она</label>
+        <label id="inLabel">она говорит</label>
         <textarea id="input" placeholder="Например: всё нормально" autocomplete="off" spellcheck="false"></textarea>
       </div>
       <button class="translate" id="go">Перевести</button>
       <div class="field result">
         <div class="result-head">
-          <label id="outLabel">перевод — он</label>
+          <label id="outLabel">он слышит</label>
           <button class="copy" id="copy">копировать</button>
         </div>
         <div class="out empty" id="output">…тут появится настоящий смысл</div>
@@ -152,7 +156,8 @@
     <div class="chips" id="chips"></div>
   </div>
 
-  <footer>Это шутка-разговорник, а не наука 😄<br>двигай слайдеры настроения — смысл меняется.</footer>
+  <footer>Это шуточный разговорник, а не наука 😄<br>Двигай ползунки настроения — смысл поменяется.</footer>
+  <div class="beta" role="note"><b>ТЕСТ</b><span>Работает на бесплатном тарифе Google Gemini: отвечает не сразу, число запросов ограничено, перевод бывает неточным.</span></div>
 </div>
 
 <script>
@@ -167,13 +172,13 @@
     f2m: {
       ru:        ['всё нормально','я не злюсь','делай что хочешь','нам надо поговорить'],
       en:        ["I'm fine",'do whatever you want','we need to talk','nothing happened'],
-      lv:        ['viss kārtībā','dari ko gribi','mums jārunā','es neesmu dusmīga'],
+      lv:        ['viss kārtībā','dari, ko gribi','mums jārunā','es neesmu dusmīga'],
       'ru-latn': ['vsyo normalno','delay kak hochesh','nam nado pogovorit','ya ne zlyus'],
     },
     m2f: {
       ru:        ['угу','я почти приехал','сейчас доиграю','потом сделаю'],
-      en:        ['yeah yeah',"I'm almost there",'one more game','I’ll do it later'],
-      lv:        ['nu jā','es tūlīt būšu','vēl viena spēle','izdarīšu vēlāk'],
+      en:        ['yeah, yeah',"I'm almost there",'one more game',"I'll do it later"],
+      lv:        ['nu jā','es tūlīt būšu','vēl tikai vienu spēli','izdarīšu vēlāk'],
       'ru-latn': ['ugu','ya pochti priehal','seychas doigrayu','potom sdelayu'],
     },
   };
@@ -196,7 +201,7 @@
     output.textContent = '…тут появится настоящий смысл';
   }
   function badge(r){
-    const sim = ' · похоже '+Math.round((r.similarity||0)*100)+'%';
+    const sim = ' · сходство '+Math.round((r.similarity||0)*100)+'%';
     switch(r.source){
       case 'cache':         return 'из кэша'+sim;
       case 'cache-new-lang':return 'из кэша · новый язык'+sim+' ✨';
@@ -225,7 +230,7 @@
     }catch(e){
       if(my !== reqId) return;
       output.classList.remove('empty');
-      output.innerHTML = '<span class="tag">сервер недоступен</span><br>Проверь, запущен ли сервер.';
+      output.innerHTML = '<span class="tag">сервер недоступен</span><br>Попробуй ещё раз чуть позже.';
     }finally{
       if(my === reqId){ btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Перевести'; }
     }
@@ -257,8 +262,8 @@
 
   function setDir(){
     const r = roles();
-    $('inLabel').textContent  = 'ввод — '+r.sp;
-    $('outLabel').textContent = 'перевод — '+r.li;
+    $('inLabel').textContent  = r.sp+' говорит';
+    $('outLabel').textContent = r.li+' слышит';
     input.placeholder = f2m ? 'Например: всё нормально' : 'Например: угу';
     paintMoods();
     loadChips();
