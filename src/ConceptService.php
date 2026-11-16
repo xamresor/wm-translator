@@ -161,7 +161,7 @@ final class ConceptService
     }
 
     /** Заполнить ВСЕ языковые варианты у всех концептов (по одному запросу на концепт). */
-    public function fillAll(callable $log = null): array
+    public function fillAll(?callable $log = null): array
     {
         $langs   = array_keys(Lang::LANGS);
         $touched = 0;
@@ -204,7 +204,7 @@ final class ConceptService
     }
 
     /** Прогрев словаря в концепты (ru→en пивот + варианты ru,en). */
-    public function seedDictionary(callable $log = null): int
+    public function seedDictionary(?callable $log = null): int
     {
         require_once __DIR__ . '/Translator.php';
         $dict  = new Translator();
