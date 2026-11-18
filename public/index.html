@@ -314,5 +314,59 @@
   setDir();
 })();
 </script>
+<script>
+// WebMCP: an AI agent in the browser reads this page as data instead of scraping it.
+try {
+  const mc = document.modelContext || navigator.modelContext;
+  if (mc && mc.registerTool) mc.registerTool({
+    name: "get_translator_info",
+    description: "What the women-men translator page is and how to use it. Read-only.",
+    inputSchema: {type: 'object', properties: {}},
+    annotations: {readOnlyHint: true},
+    execute: async () => {
+      const t = e => e ? (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim() : '';
+      const blocks = [...document.querySelectorAll('section')];
+      return {
+        page: location.origin + location.pathname,
+        language: document.documentElement.lang || '',
+        title: document.title,
+        summary: (document.querySelector('meta[name="description"]') || {}).content || '',
+        sections: (blocks.length ? blocks : [document.querySelector('main') || document.body])
+          .map(s => ({heading: t(s.querySelector('h1,h2,h3')), text: t(s).slice(0, 2000)})).filter(s => s.text),
+        links: [...document.querySelectorAll('a[href^="mailto:"],a[href^="tel:"],a[href^="http"]')]
+          .map(a => ({text: t(a) || a.getAttribute('aria-label') || '', href: a.href})).slice(0, 60)
+      };
+    }
+  });
+} catch (e) {}
+</script>
+<script>
+// WebMCP: an AI agent in the browser can call the translator directly.
+try {
+  const mc = document.modelContext || navigator.modelContext;
+  if (mc && mc.registerTool) mc.registerTool({
+    name: 'translate_her_him',
+    description: 'Humorous "women-to-men / men-to-women" translator: takes a phrase one partner said and returns what it means for the other. Calls the site API (rate-limited: 40 requests per 5 minutes).',
+    inputSchema: {type: 'object', required: ['text'], properties: {
+      text: {type: 'string', description: 'The phrase to translate.'},
+      direction: {type: 'string', enum: ['f2m', 'm2f'], description: 'f2m: she says, he hears (default). m2f: he says, she hears.'},
+      lang: {type: 'string', description: 'Language code of the phrase, default "ru".'},
+      mood_speaker: {type: 'number', description: 'Mood of the one who speaks, 0 (happy) to 100 (furious), default 50.'},
+      mood_listener: {type: 'number', description: 'Mood of the one who listens, 0 to 100, default 50.'}
+    }},
+    execute: async (input) => {
+      const r = await fetch('/api/translate', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify((() => {
+          const dir = input.direction === 'm2f' ? 'm2f' : 'f2m', m = v => typeof v === 'number' ? Math.min(100, Math.max(0, Math.round(v))) : 50;
+          const sp = m(input.mood_speaker), li = m(input.mood_listener);
+          const box = document.getElementById('input'); if (box) box.value = String(input.text || '');
+          return {text: String(input.text || ''), direction: dir, lang: input.lang || 'ru', mood_she: dir === 'f2m' ? sp : li, mood_he: dir === 'f2m' ? li : sp};
+        })())});
+      const j = await r.json().catch(() => ({}));
+      return r.ok ? j : {error: j.error || ('http ' + r.status)};
+    }
+  });
+} catch (e) {}
+</script>
 </body>
 </html>
