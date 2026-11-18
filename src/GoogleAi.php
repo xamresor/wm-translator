@@ -210,7 +210,6 @@ final class GoogleAi
             $raw  = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $err  = curl_error($ch);
-            curl_close($ch);
 
             if ($raw === false) {
                 if ($i < $attempts) { sleep($i); continue; }
